@@ -1,12 +1,16 @@
 package com.howard.rpc.myRPCv1.server;
 
 import com.howard.rpc.myRPCv1.common.LoggerSingleton;
+import com.howard.rpc.myRPCv1.common.RPCRequest;
+import com.howard.rpc.myRPCv1.common.RPCResponse;
 import com.howard.rpc.myRPCv1.common.User;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -26,15 +30,20 @@ public class RPCServer {
                 new Thread(() -> {
                     try {
 
-                        ObjectInputStream in = new ObjectInputStream(client.getInputStream());
                         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-                        Integer id = in.readInt();
-                        User user = userService.getUserById(id);
+                        ObjectInputStream in = new ObjectInputStream(client.getInputStream());
 
-                        out.writeObject(user);
+                        RPCRequest request = (RPCRequest) in.readObject();
+
+                        Method method = userService.getClass().getMethod(request.getMethodName(), request.getParamsTypes());
+                        Object invokeResult = method.invoke(userService, request.getParams());
+
+
+
+                        out.writeObject(RPCResponse.success(invokeResult));
                         out.flush();
 
-                    } catch (IOException e) {
+                    } catch (IOException | ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         log.error("Server failed to get User: \n" + e.getMessage());
                         System.out.println("Server failed to get User: \n" + e.getMessage());
                     }

@@ -2,33 +2,31 @@ package com.howard.rpc.myRPCv1.client;
 
 import com.howard.rpc.myRPCv1.common.LoggerSingleton;
 import com.howard.rpc.myRPCv1.common.User;
+import com.howard.rpc.myRPCv1.service.UserService;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.util.Random;
+
 
 public class RPCClient {
-    private static final Logger logger = LoggerSingleton.getLogger();
+    private static final Logger log = LoggerSingleton.getLogger();
     public static void main(String[] args) {
-        try {
-            Socket socket = new Socket("127.0.0.1", 65535);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
-            out.writeInt(new Random().nextInt(10000));
-            out.flush();
+        ClientProxy clientProxy = new ClientProxy("127.0.0.1", 65535);
+        UserService userServiceProxy = clientProxy.getProxy(UserService.class);
 
-            User user = (User) in.readObject();
-            logger.info("Get user from server: " + user);
-            System.out.println("Get user from server: " + user);
+        // service method 1
+        User userByUserId = userServiceProxy.getUserById(10);
+        log.info("Get user: {} from server.", userByUserId);
+        System.out.printf("Get user: {%s} from server\n", userByUserId);
 
-        } catch (IOException | ClassNotFoundException e) {
-            logger.error(e.getMessage());
-            e.printStackTrace();
-            System.out.println("Client initialization failed!");
-        }
+        // service method 2
+        User user = User.builder()
+                .id(100)
+                .userName("Michael")
+                .sex(true)
+                .build();
+        Integer userId = userServiceProxy.insertUserId(user);
+        log.info("Insert user: {} into server, userId: {}.", user, userId);
+        System.out.printf("Insert user: {%s} into server, userId: {%d}.\n", user, userId);
     }
 }

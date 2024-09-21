@@ -23,4 +23,10 @@ public class UserServiceImpl implements UserService {
                 .id(id)
                 .build();
     }
+
+    @Override
+    public Integer insertUserId(User user) {
+        System.out.println("Insert user success: " + user);
+        return 1;
+    }
 }
