@@ -57,6 +57,12 @@
             <version>4.1.51.Final</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
